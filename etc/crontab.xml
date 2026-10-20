@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+
+    Every five minutes: a run in progress taken as far as it can go (one
+    flag read when there is none). Nightly: the weekly run started on its day.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="zero_personalize_advance" instance="Zero\Personalize\Cron\Advance" method="execute">
+            <schedule>*/5 * * * *</schedule>
+        </job>
+        <job name="zero_personalize_schedule" instance="Zero\Personalize\Cron\Schedule" method="execute">
+            <schedule>40 2 * * *</schedule>
+        </job>
+    </group>
+</config>

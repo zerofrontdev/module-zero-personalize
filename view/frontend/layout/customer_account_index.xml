@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="Zero\Personalize\Block\Recommendations" name="zero.personalize.for_you" template="Zero_Personalize::recommendations.phtml" after="-" ifconfig="zero_personalize/general/enabled">
+                <arguments>
+                    <argument name="mode" xsi:type="string">for_you</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

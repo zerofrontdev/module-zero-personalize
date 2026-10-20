@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+
+    The fragment: the picks block alone, with the price renderer it needs.
+-->
+<layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/layout_generic.xsd">
+    <container name="root">
+        <block class="Magento\Framework\Pricing\Render" name="product.price.render.default">
+            <arguments>
+                <argument name="price_render_handle" xsi:type="string">catalog_product_prices</argument>
+                <argument name="use_link_for_as_low_as" xsi:type="boolean">true</argument>
+            </arguments>
+        </block>
+        <block class="Zero\Personalize\Block\Recommendations" name="zero.personalize.for_you" template="Zero_Personalize::recommendations.phtml" cacheable="false">
+            <arguments>
+                <argument name="mode" xsi:type="string">for_you</argument>
+            </arguments>
+        </block>
+    </container>
+</layout>

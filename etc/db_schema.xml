@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+
+    The recommendations the last training run produced, read by the
+    storefront: similar products per product, picks per customer.
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="zero_personalize_similar" resource="default" engine="innodb" comment="Zero Personalize: similar products">
+        <column xsi:type="int" name="product_id" unsigned="true" nullable="false" comment="Product ID"/>
+        <column xsi:type="smallint" name="position" unsigned="true" nullable="false" comment="Position, 0 best"/>
+        <column xsi:type="int" name="recommended_id" unsigned="true" nullable="false" comment="Recommended product ID"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="product_id"/>
+            <column name="position"/>
+        </constraint>
+    </table>
+    <table name="zero_personalize_user" resource="default" engine="innodb" comment="Zero Personalize: picks per customer">
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Customer ID"/>
+        <column xsi:type="smallint" name="position" unsigned="true" nullable="false" comment="Position, 0 best"/>
+        <column xsi:type="int" name="product_id" unsigned="true" nullable="false" comment="Product ID"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="customer_id"/>
+            <column name="position"/>
+        </constraint>
+    </table>
+</schema>

@@ -1,0 +1,20 @@
+/*
+ * Copyright © 2026 Roman Pasichnyk
+ * SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+ *
+ * Zero_Personalize: the recommendation rows take the theme's up-sell
+ * look; spacing where they stand alone (home page, cart, My Account).
+ */
+@layer components {
+    .zero-recommendations {
+        @apply my-12;
+    }
+
+    .zero-recommendations-title {
+        @apply text-2xl font-bold tracking-tight mb-6;
+    }
+
+    .zero-recommendations-slot:empty {
+        display: none;
+    }
+}

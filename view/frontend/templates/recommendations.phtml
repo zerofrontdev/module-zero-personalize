@@ -1,0 +1,51 @@
+<?php
+/**
+ * Copyright © 2026 Roman Pasichnyk
+ * SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+ *
+ * A row of recommended products, as the theme shows up-sells: photo with
+ * its badges, name, price.
+ *
+ * @var \Zero\Personalize\Block\Recommendations $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$items = $block->items();
+if (!$items) {
+    return;
+}
+$heading = $block->heading();
+$id = 'zero-personalize-' . $escaper->escapeHtmlAttr($block->mode());
+$badges = $block->getLayout()->getBlock('zero.product.badges');
+?>
+<section class="block upsell zero-recommendations" aria-labelledby="<?= /* @noEscape */ $id ?>" data-zero-recommendations="<?= $escaper->escapeHtmlAttr($block->mode()) ?>">
+    <div class="block-title title">
+        <h2 id="<?= /* @noEscape */ $id ?>" class="zero-recommendations-title">
+            <?= $escaper->escapeHtml($heading['lead']) ?>
+            <?php if ($heading['accent'] !== ''): ?>
+                <em class="font-display text-secondary"><?= $escaper->escapeHtml($heading['accent']) ?></em>
+            <?php endif; ?>
+        </h2>
+    </div>
+    <div class="block-content content">
+        <div class="products wrapper grid products-grid products-upsell">
+            <ol class="products list items product-items">
+                <?php foreach ($items as $product): ?>
+                    <li class="item product product-item">
+                        <div class="product-item-info">
+                            <a href="<?= $escaper->escapeUrl($block->getProductUrl($product)) ?>" class="product photo product-item-photo" tabindex="-1">
+                                <?= $block->getImage($product, 'upsell_products_list')->toHtml() ?>
+                                <?= $badges ? $badges->setProduct($product)->toHtml() : '' ?>
+                            </a>
+                            <div class="product details product-item-details">
+                                <strong class="product name product-item-name">
+                                    <a class="product-item-link" href="<?= $escaper->escapeUrl($block->getProductUrl($product)) ?>"><?= $escaper->escapeHtml($product->getName()) ?></a>
+                                </strong>
+                                <?= /* @noEscape */ $block->getProductPrice($product) ?>
+                            </div>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+    </div>
+</section>

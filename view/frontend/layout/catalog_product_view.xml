@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+
+    Similar products after the details, before the up-sells.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content.aside">
+            <block class="Zero\Personalize\Block\Recommendations" name="zero.personalize.similar" template="Zero_Personalize::recommendations.phtml" before="-" ifconfig="zero_personalize/general/enabled">
+                <arguments>
+                    <argument name="mode" xsi:type="string">similar</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

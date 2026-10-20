@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+
+    The access keys never go to app/etc/config.php (app:config:dump): they
+    are sensitive, set with config:set or in env.php.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="sensitive" xsi:type="array">
+                <item name="zero_personalize/aws/access_key" xsi:type="string">1</item>
+                <item name="zero_personalize/aws/secret_key" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="zero_personalize_train" xsi:type="object">Zero\Personalize\Console\Command\Train</item>
+                <item name="zero_personalize_status" xsi:type="object">Zero\Personalize\Console\Command\Status</item>
+                <item name="zero_personalize_teardown" xsi:type="object">Zero\Personalize\Console\Command\Teardown</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

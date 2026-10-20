@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="zero_personalize" translate="label" type="text" sortOrder="99" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Recommendations</label>
+            <tab>zero</tab>
+            <resource>Zero_Personalize::config</resource>
+            <group id="status" translate="label" type="text" sortOrder="5" showInDefault="1">
+                <label>Training</label>
+                <field id="panel" type="text" sortOrder="10" showInDefault="1">
+                    <frontend_model>Zero\Personalize\Block\Adminhtml\Status</frontend_model>
+                </field>
+            </group>
+            <group id="general" translate="label comment" type="text" sortOrder="10" showInDefault="1">
+                <label>Recommendations</label>
+                <comment><![CDATA[Amazon Personalize learns from the store's orders, carts and wishlists once a week and recommends similar products on the product page and picks for each signed-in customer. It runs in batch mode: AWS bills the training and the batch (a few dollars a run), nothing by the hour.]]></comment>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" canRestore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="aws" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                <label>Amazon Personalize</label>
+                <comment><![CDATA[The bucket and the role are made once (the module's README has the Terraform and the policy). Personalize reads the store's exports from the bucket with the role.]]></comment>
+                <field id="region" translate="label" type="text" sortOrder="10" showInDefault="1" canRestore="1">
+                    <label>Region</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="bucket" translate="label comment" type="text" sortOrder="20" showInDefault="1">
+                    <label>S3 Bucket</label>
+                    <comment>In the same region. Each store writes under its own prefix.</comment>
+                </field>
+                <field id="role_arn" translate="label comment" type="text" sortOrder="30" showInDefault="1">
+                    <label>IAM Role for Personalize</label>
+                    <comment>arn:aws:iam::…:role/…, trusted by personalize.amazonaws.com, allowed to read and write the bucket.</comment>
+                </field>
+                <field id="prefix" translate="label comment" type="text" sortOrder="40" showInDefault="1">
+                    <label>Resource Name Prefix</label>
+                    <comment>Empty: "zero-" and the store's host name. Lets one AWS account hold several stores and a development copy.</comment>
+                </field>
+                <field id="access_key" translate="label comment" type="text" sortOrder="50" showInDefault="1">
+                    <label>Access Key ID</label>
+                    <comment>Only for a store outside AWS. Empty: the server's own credentials (the EC2 instance role).</comment>
+                </field>
+                <field id="secret_key" translate="label" type="obscure" sortOrder="60" showInDefault="1">
+                    <label>Secret Access Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+            </group>
+            <group id="training" translate="label" type="text" sortOrder="30" showInDefault="1">
+                <label>Training</label>
+                <field id="day" translate="label comment" type="select" sortOrder="10" showInDefault="1" canRestore="1">
+                    <label>Train Every</label>
+                    <source_model>Zero\Personalize\Model\Source\TrainDay</source_model>
+                    <comment>At night (02:40). A run takes one to three hours.</comment>
+                </field>
+                <field id="lookback_days" translate="label comment" type="text" sortOrder="20" showInDefault="1" canRestore="1">
+                    <label>Learn From the Last (days)</label>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                    <comment>Orders, carts and wishlists of this period.</comment>
+                </field>
+            </group>
+            <group id="storefront" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Storefront</label>
+                <field id="similar_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Similar Products on the Product Page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="similar_title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Similar Products Title</label>
+                    <depends><field id="similar_enabled">1</field></depends>
+                </field>
+                <field id="similar_count" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Similar Products Shown</label>
+                    <validate>validate-digits validate-digits-range digits-range-1-12</validate>
+                    <depends><field id="similar_enabled">1</field></depends>
+                </field>
+                <field id="user_enabled" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Picks for Signed-in Customers</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>On the home page, the cart and My Account, for customers with a history.</comment>
+                </field>
+                <field id="user_title" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Picks Title</label>
+                    <depends><field id="user_enabled">1</field></depends>
+                </field>
+                <field id="user_count" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Picks Shown</label>
+                    <validate>validate-digits validate-digits-range digits-range-1-12</validate>
+                    <depends><field id="user_enabled">1</field></depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

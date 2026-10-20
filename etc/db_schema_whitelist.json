@@ -1,0 +1,22 @@
+{
+    "zero_personalize_similar": {
+        "column": {
+            "product_id": true,
+            "position": true,
+            "recommended_id": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "zero_personalize_user": {
+        "column": {
+            "customer_id": true,
+            "position": true,
+            "product_id": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

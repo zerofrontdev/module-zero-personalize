@@ -1,0 +1,17 @@
+<?php
+/**
+ * Copyright © 2026 Roman Pasichnyk
+ * SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+ *
+ * The home page's place for a signed-in customer's picks: the page is
+ * cached for everyone, so the picks come from the fragment
+ * zeropersonalize/foryou after load, and replace this (nothing, for a
+ * guest or a customer without picks).
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<div class="zero-recommendations-slot"
+     hx-get="<?= $escaper->escapeUrl($block->getUrl('zeropersonalize/foryou')) ?>"
+     hx-trigger="load" hx-swap="outerHTML"></div>

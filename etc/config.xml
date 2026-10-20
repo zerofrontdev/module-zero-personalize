@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+    Copyright © 2026 Roman Pasichnyk
+    SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <zero_personalize>
+            <general>
+                <enabled>0</enabled>
+            </general>
+            <aws>
+                <region>us-east-1</region>
+                <bucket/>
+                <role_arn/>
+                <prefix/>
+                <access_key/>
+                <secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+            </aws>
+            <training>
+                <lookback_days>365</lookback_days>
+                <day>1</day>
+            </training>
+            <storefront>
+                <similar_enabled>1</similar_enabled>
+                <similar_title>You may also like</similar_title>
+                <similar_count>8</similar_count>
+                <user_enabled>1</user_enabled>
+                <user_title>Picked for you</user_title>
+                <user_count>8</user_count>
+            </storefront>
+        </zero_personalize>
+    </default>
+</config>

@@ -1,0 +1,7 @@
+Copyright © 2026 Roman Pasichnyk. All rights reserved.
+
+This package is licensed, not sold, under the license bought in 0 Marketplace
+(https://marketplace.fixstacks.com/) for the store it was bought for.
+It may be installed and changed for that store; it may not be redistributed,
+published or resold. Updates are available while the license's update period
+runs (My Account > Licenses).

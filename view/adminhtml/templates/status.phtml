@@ -1,0 +1,54 @@
+<?php
+/**
+ * Copyright © 2026 Roman Pasichnyk
+ * SPDX-License-Identifier: OSL-3.0 OR AFL-3.0
+ *
+ * @var \Zero\Personalize\Block\Adminhtml\Status $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$state = $block->state();
+$running = in_array($state['step'], \Zero\Personalize\Model\State::RUNNING, true);
+$last = $state['last'];
+$labels = [
+    'idle' => __('Not trained yet'), 'setup' => __('Setting up on AWS'), 'import' => __('Importing the data'),
+    'train' => __('Training'), 'batch' => __('Computing the recommendations'), 'load' => __('Loading'),
+    'done' => __('Ready'), 'failed' => __('Failed'),
+];
+?>
+<div class="zero-personalize-status" style="max-width: 900px; display: grid; gap: 10px">
+    <p>
+        <strong><?= $escaper->escapeHtml($labels[$state['step']] ?? $state['step']) ?></strong>
+        <?php if ($running && !empty($state['run']['waiting'])): ?>
+            · <?= $escaper->escapeHtml($state['run']['waiting']) ?>
+        <?php endif; ?>
+        <?php if ($state['updated_at']): ?>
+            <span style="color: #6f6f6f">· <?= $escaper->escapeHtml(__('updated %1', $block->format($state['updated_at']))) ?></span>
+        <?php endif; ?>
+    </p>
+    <?php if ($state['step'] === 'failed' && $state['error']): ?>
+        <div class="message message-error error"><div><?= $escaper->escapeHtml($state['error']) ?></div></div>
+    <?php endif; ?>
+    <?php if ($last): ?>
+        <p>
+            <?= $escaper->escapeHtml(__(
+                'Last run finished %1: learned from %2 interactions of %3 shoppers%4; similar products for %5 products, picks for %6 customers; %7 training hours.',
+                $block->format($last['finished_at']),
+                (int) ($last['stats']['interactions'] ?? 0),
+                (int) ($last['stats']['users'] ?? 0),
+                $last['demo'] ? ' ' . __('(with demo shoppers)') : '',
+                (int) $last['products'],
+                (int) $last['customers'],
+                $last['training_hours'] ?? '?'
+            )) ?>
+        </p>
+    <?php endif; ?>
+    <?php if (!$block->isConfigured()): ?>
+        <p><?= $escaper->escapeHtml(__('Set the S3 bucket and the IAM role below, save, then train.')) ?></p>
+    <?php elseif (!$running): ?>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+            <a class="action-primary" href="<?= $escaper->escapeUrl($block->startUrl()) ?>"><?= $escaper->escapeHtml(__('Train Now')) ?></a>
+            <a class="action-secondary" href="<?= $escaper->escapeUrl($block->startUrl(true)) ?>"><?= $escaper->escapeHtml(__('Train Now With Demo Shoppers')) ?></a>
+        </div>
+        <p style="color: #6f6f6f"><?= $escaper->escapeHtml(__('Resources are named %1… CLI: bin/magento zero:personalize:train --wait, zero:personalize:status.', $block->prefix())) ?></p>
+    <?php endif; ?>
+</div>
