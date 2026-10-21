@@ -1,15 +1,15 @@
 {
-    "name": "fixstacks/module-zero-personalize",
+    "name": "zerofront/module-zero-personalize",
     "description": "Zero for Magento Open Source: AI recommendations with Amazon Personalize in batch mode: similar products on the product page and picks for every signed-in customer, learned weekly from orders, carts and wishlists, a few dollars a month on AWS.",
     "type": "magento2-module",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "license": "proprietary",
     "authors": [
         {
             "name": "Roman Pasichnyk"
         }
     ],
-    "homepage": "https://marketplace.fixstacks.com/",
+    "homepage": "https://marketplace.zerofront.dev/",
     "keywords": [
         "magento",
         "magento2",
@@ -33,7 +33,10 @@
         "magento/module-sales": "*",
         "magento/module-store": "*",
         "magento/module-wishlist": "*",
-        "fixstacks/module-zero-core": "^1.3"
+        "zerofront/module-zero-core": "^1.3"
+    },
+    "replace": {
+        "fixstacks/module-zero-personalize": "self.version"
     },
     "autoload": {
         "files": [

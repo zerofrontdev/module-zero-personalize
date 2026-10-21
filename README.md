@@ -62,7 +62,7 @@ them to stop.
 ## Setting up AWS
 
 One S3 bucket and one IAM role, made once (Terraform below, as on
-zero.fixstacks.com), then:
+demo.zerofront.dev), then:
 
 - **S3 Bucket** and **IAM Role for Personalize** in the configuration (or
   pinned in `app/etc/config.php`, as the Zero repository does);
@@ -126,7 +126,7 @@ not visible) are left out; with nothing to show, nothing is rendered.
 ## Install
 
 ```
-composer require fixstacks/module-zero-personalize
+composer require zerofront/module-zero-personalize
 bin/magento setup:upgrade
 ```
 
