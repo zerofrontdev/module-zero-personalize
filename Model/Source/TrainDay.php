@@ -21,7 +21,6 @@ class TrainDay implements OptionSourceInterface
         foreach ($days as $value => $label) {
             $options[] = ['value' => $value, 'label' => $label];
         }
-        $options[] = ['value' => -1, 'label' => __('Never: only by hand')];
         return $options;
     }
 }

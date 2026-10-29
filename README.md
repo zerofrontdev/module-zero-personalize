@@ -123,6 +123,12 @@ a new run starts over.
 Products that aren't for sale in the store view (disabled, out of stock,
 not visible) are left out; with nothing to show, nothing is rendered.
 
+Where it shows: **Enabled** (Recommendations) can be set per website and
+store view: off hides both blocks there, on shows them even where the
+Default is off. Each block also has its own switch (Storefront > Similar
+Products, Picks). The weekly training and the exports follow the Default
+value of Enabled only, so switching a store view off doesn't stop them.
+
 ## Install
 
 ```
@@ -132,4 +138,4 @@ bin/magento setup:upgrade
 
 Magento Open Source 2.4.7–2.4.9, PHP 8.2–8.4, `aws/aws-sdk-php` 3. Unit
 tests: `Test/Unit/Model/` (the export, the batch output, a whole run against
-the SDK's mock handler).
+the SDK's mock handler, Enabled per scope).

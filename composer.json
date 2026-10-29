@@ -2,7 +2,7 @@
     "name": "zerofront/module-zero-personalize",
     "description": "Zero for Magento Open Source: AI recommendations with Amazon Personalize in batch mode: similar products on the product page and picks for every signed-in customer, learned weekly from orders, carts and wishlists, a few dollars a month on AWS.",
     "type": "magento2-module",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "license": "proprietary",
     "authors": [
         {

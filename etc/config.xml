@@ -18,6 +18,7 @@
                 <secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
             </aws>
             <training>
+                <mode>schedule</mode>
                 <lookback_days>365</lookback_days>
                 <day>1</day>
             </training>

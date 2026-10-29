@@ -55,7 +55,9 @@ class Recommendations extends AbstractProduct implements IdentityInterface
     public function title(): string
     {
         $title = $this->mode() === 'for_you' ? $this->config->userTitle() : $this->config->similarTitle();
-        return $title !== '' ? $title : (string) ($this->mode() === 'for_you' ? __('Picked for you') : __('You may also like'));
+        // Translated as well: the defaults in config.xml are English, and a title of the
+        // merchant's own without a translation stays as typed.
+        return $title !== '' ? (string) __($title) : (string) ($this->mode() === 'for_you' ? __('Picked for you') : __('You may also like'));
     }
 
     /**

@@ -15,12 +15,13 @@
                     <frontend_model>Zero\Personalize\Block\Adminhtml\Status</frontend_model>
                 </field>
             </group>
-            <group id="general" translate="label comment" type="text" sortOrder="10" showInDefault="1">
+            <group id="general" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Recommendations</label>
                 <comment><![CDATA[Amazon Personalize learns from the store's orders, carts and wishlists once a week and recommends similar products on the product page and picks for each signed-in customer. It runs in batch mode: AWS bills the training and the batch (a few dollars a run), nothing by the hour.]]></comment>
-                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" canRestore="1">
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>For a website or store view: shows or hides the recommendations there. The weekly training and the exports follow the Default Config value.</comment>
                 </field>
             </group>
             <group id="aws" translate="label comment" type="text" sortOrder="20" showInDefault="1">
@@ -53,10 +54,16 @@
             </group>
             <group id="training" translate="label" type="text" sortOrder="30" showInDefault="1">
                 <label>Training</label>
+                <field id="mode" translate="label comment" type="select" sortOrder="5" showInDefault="1" canRestore="1">
+                    <label>Training</label>
+                    <source_model>Zero\Personalize\Model\Source\TrainMode</source_model>
+                    <comment>Each run is billed by AWS (about $1.50–2). By hand, the recommendations stay as the last run left them until Train Now (above) or bin/magento zero:personalize:train.</comment>
+                </field>
                 <field id="day" translate="label comment" type="select" sortOrder="10" showInDefault="1" canRestore="1">
                     <label>Train Every</label>
                     <source_model>Zero\Personalize\Model\Source\TrainDay</source_model>
                     <comment>At night (02:40). A run takes one to three hours.</comment>
+                    <depends><field id="mode">schedule</field></depends>
                 </field>
                 <field id="lookback_days" translate="label comment" type="text" sortOrder="20" showInDefault="1" canRestore="1">
                     <label>Learn From the Last (days)</label>

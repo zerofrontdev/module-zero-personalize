@@ -11,6 +11,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Zero\Personalize\Model\Source\TrainMode;
 
 /**
  * Stores > Configuration > Zero > Recommendations.
@@ -25,6 +26,7 @@ class Config
     public const ACCESS_KEY = 'zero_personalize/aws/access_key';
     public const SECRET_KEY = 'zero_personalize/aws/secret_key';
     public const LOOKBACK_DAYS = 'zero_personalize/training/lookback_days';
+    public const TRAIN_MODE = 'zero_personalize/training/mode';
     public const TRAIN_DAY = 'zero_personalize/training/day';
     public const SIMILAR_ENABLED = 'zero_personalize/storefront/similar_enabled';
     public const SIMILAR_TITLE = 'zero_personalize/storefront/similar_title';
@@ -40,9 +42,21 @@ class Config
     ) {
     }
 
+    /**
+     * The training and the exports: Enabled at the Default scope. A website or
+     * store view switched off only hides the recommendations there (isOn()).
+     */
     public function isEnabled(): bool
     {
         return $this->scopeConfig->isSetFlag(self::ENABLED);
+    }
+
+    /**
+     * Enabled for this store view: its own value, else its website's, else the Default.
+     */
+    public function isOn(int|string|null $store = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(self::ENABLED, ScopeInterface::SCOPE_STORE, $store);
     }
 
     public function region(): string
@@ -97,17 +111,21 @@ class Config
     }
 
     /**
-     * The weekday of the automatic training (0 Sunday … 6 Saturday); -1: never.
+     * The weekday of the automatic training (0 Sunday … 6 Saturday); -1: never (Training by hand,
+     * or the older "Never" day).
      */
     public function trainDay(): int
     {
+        if ($this->scopeConfig->getValue(self::TRAIN_MODE) === TrainMode::MANUAL) {
+            return -1;
+        }
         $value = $this->scopeConfig->getValue(self::TRAIN_DAY);
         return $value === null || $value === '' ? 1 : (int) $value;
     }
 
     public function isSimilarShown(int|string|null $store = null): bool
     {
-        return $this->isEnabled() && $this->scopeConfig->isSetFlag(self::SIMILAR_ENABLED, ScopeInterface::SCOPE_STORE, $store);
+        return $this->isOn($store) && $this->scopeConfig->isSetFlag(self::SIMILAR_ENABLED, ScopeInterface::SCOPE_STORE, $store);
     }
 
     public function similarTitle(int|string|null $store = null): string
@@ -122,7 +140,7 @@ class Config
 
     public function isUserShown(int|string|null $store = null): bool
     {
-        return $this->isEnabled() && $this->scopeConfig->isSetFlag(self::USER_ENABLED, ScopeInterface::SCOPE_STORE, $store);
+        return $this->isOn($store) && $this->scopeConfig->isSetFlag(self::USER_ENABLED, ScopeInterface::SCOPE_STORE, $store);
     }
 
     public function userTitle(int|string|null $store = null): string
