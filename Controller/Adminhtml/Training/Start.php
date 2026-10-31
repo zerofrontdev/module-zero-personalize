@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Zero\Personalize\Controller\Adminhtml\Training;
 
 use Magento\Backend\App\Action;
-use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Exception\LocalizedException;
@@ -16,10 +15,11 @@ use Zero\Personalize\Model\Pipeline;
 
 /**
  * Train Now: a run started (the export and the first AWS calls, seconds);
- * the cron takes it on from there. A link on the configuration page (which
- * is a form itself); the admin URL's secret key guards it.
+ * the cron takes it on from there. A POST only (a run bills AWS): the
+ * configuration page's buttons post it with the form key (mage/dataPost, as
+ * that page is a form itself); the admin URL's secret key guards it too.
  */
-class Start extends Action implements HttpGetActionInterface, HttpPostActionInterface
+class Start extends Action implements HttpPostActionInterface
 {
     public const ADMIN_RESOURCE = 'Zero_Personalize::config';
 

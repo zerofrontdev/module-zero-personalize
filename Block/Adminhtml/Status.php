@@ -63,4 +63,18 @@ class Status extends Field
     {
         return $this->getUrl('zero_personalize/training/start', $demo ? ['demo' => 1] : []);
     }
+
+    /**
+     * Train Now as a POST (data-post, mage/dataPost): the action, and demo=1 for the demo shoppers.
+     *
+     * `data` must be a JSON object even when empty: dataPost adds form_key to it, and on
+     * an empty array (`[]`) that key is never written into the form, so the POST fails.
+     */
+    public function postData(bool $demo): string
+    {
+        return (string) json_encode([
+            'action' => $this->startUrl(),
+            'data' => $demo ? ['demo' => 1] : new \stdClass(),
+        ]);
+    }
 }

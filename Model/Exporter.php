@@ -12,6 +12,7 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\EntityManager\MetadataPool;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 
 /**
@@ -19,8 +20,9 @@ use Magento\Catalog\Api\Data\ProductInterface;
  * products, and who bought, put in a cart or wished for which of them (no
  * tracking script: orders, quotes and wishlists already say it).
  *
- * Users: a customer is "c<id>"; a guest's order "g<hash of the email>"; a
- * guest's cart "q<quote id>". Only "c" users get "Picked for you".
+ * Users: a customer is "c<id>"; a guest's order "g<keyed hash of the email>"
+ * (HMAC with the install's crypt key: the id says nothing outside this
+ * store); a guest's cart "q<quote id>". Only "c" users get "Picked for you".
  */
 class Exporter
 {
@@ -33,7 +35,8 @@ class Exporter
     public function __construct(
         private readonly ResourceConnection $resource,
         private readonly EavConfig $eavConfig,
-        private readonly MetadataPool $metadataPool
+        private readonly MetadataPool $metadataPool,
+        private readonly EncryptorInterface $encryptor
     ) {
     }
 
@@ -56,7 +59,7 @@ class Exporter
         foreach ($db->fetchAll($orders) as $row) {
             $user = $row['customer_id']
                 ? 'c' . (int) $row['customer_id']
-                : 'g' . substr(sha1(strtolower(trim((string) $row['customer_email']))), 0, 16);
+                : 'g' . substr($this->encryptor->hash(strtolower(trim((string) $row['customer_email']))), 0, 16);
             $rows[] = [$user, (int) $row['product_id'], (int) strtotime($row['created_at'] . ' UTC'), 'Purchase'];
         }
 
@@ -98,7 +101,7 @@ class Exporter
         $db = $this->resource->getConnection();
         $link = $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
         $attr = fn (string $code) => $this->eavConfig->getAttribute('catalog_product', $code);
-        $value = function (string $code, string $alias) use ($db, $attr, $link) {
+        $value = function (string $code, string $alias) use ($attr, $link) {
             $attribute = $attr($code);
             return [
                 [$alias => $attribute->getBackendTable()],

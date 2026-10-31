@@ -43,7 +43,7 @@ No tracking script: the store already knows.
 
 | Interaction | From | User |
 | --- | --- | --- |
-| `Purchase` | order lines (not cancelled orders) | `c<customer id>`, or `g<hash of the email>` for a guest |
+| `Purchase` | order lines (not cancelled orders) | `c<customer id>`, or `g<keyed hash of the email>` for a guest (HMAC with the install's crypt key) |
 | `AddToCart` | quote lines, abandoned carts included | `c<customer id>`, or `q<quote id>` for a guest |
 | `Wishlist` | wishlist items | `c<customer id>` |
 
@@ -91,9 +91,13 @@ a development copy.
 
 ## Running it
 
-- **Train Now** on the configuration page, or
+- **Train Now** on the configuration page (a POST with the form key; a
+  plain GET of its URL answers 404), or
   `bin/magento zero:personalize:train [--demo-data] [--wait]`: exports and
   starts; `--wait` follows the run to the end (one to three hours).
+- One step at a time: the cron, the CLI and Train Now share a lock
+  (`zero_personalize_pipeline`). The cron skips while another step runs;
+  Train Now and the CLI say "A training step is running right now".
 - The cron `zero_personalize_advance` (every five minutes) takes a run in
   progress further; `zero_personalize_schedule` starts the weekly run on
   its day (Train Every; Never: by hand only).
@@ -139,3 +143,5 @@ bin/magento setup:upgrade
 Magento Open Source 2.4.7–2.4.9, PHP 8.2–8.4, `aws/aws-sdk-php` 3. Unit
 tests: `Test/Unit/Model/` (the export, the batch output, a whole run against
 the SDK's mock handler, Enabled per scope).
+
+What changed in each release: [CHANGELOG.md](CHANGELOG.md).

@@ -46,9 +46,10 @@ $labels = [
         <p><?= $escaper->escapeHtml(__('Set the S3 bucket and the IAM role below, save, then train.')) ?></p>
     <?php elseif (!$running): ?>
         <div style="display: flex; gap: 10px; flex-wrap: wrap">
-            <a class="action-primary" href="<?= $escaper->escapeUrl($block->startUrl()) ?>"><?= $escaper->escapeHtml(__('Train Now')) ?></a>
-            <a class="action-secondary" href="<?= $escaper->escapeUrl($block->startUrl(true)) ?>"><?= $escaper->escapeHtml(__('Train Now With Demo Shoppers')) ?></a>
+            <a href="#" class="action-primary" data-post="<?= $escaper->escapeHtmlAttr($block->postData(false)) ?>"><?= $escaper->escapeHtml(__('Train Now')) ?></a>
+            <a href="#" class="action-secondary" data-post="<?= $escaper->escapeHtmlAttr($block->postData(true)) ?>"><?= $escaper->escapeHtml(__('Train Now With Demo Shoppers')) ?></a>
         </div>
+        <script type="text/x-magento-init">{"*": {"mage/dataPost": {}}}</script>
         <p style="color: #6f6f6f"><?= $escaper->escapeHtml(__('Resources are named %1… CLI: bin/magento zero:personalize:train --wait, zero:personalize:status.', $block->prefix())) ?></p>
     <?php endif; ?>
 </div>

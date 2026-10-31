@@ -10,6 +10,7 @@ namespace Zero\Personalize\Model;
 use Magento\Framework\Event\ManagerInterface as EventManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Indexer\CacheContext;
+use Magento\Framework\Lock\LockManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -27,11 +28,17 @@ use Psr\Log\LoggerInterface;
  *   load   the results read into the store's tables (Results), the pages
  *          with recommendations cleaned from the cache
  * then done. Any AWS error ends the run as failed, with the message.
+ *
+ * One step at a time: start, resume, reload, cancel and advance share a lock,
+ * so the cron and the CLI or the admin never run a step twice (two imports,
+ * two trainings billed). advance() skips while another holds it; the others
+ * refuse.
  */
 class Pipeline
 {
     /** Recommendations kept per product and per customer. */
     public const RESULTS = 12;
+    private const LOCK = 'zero_personalize_pipeline';
 
     public function __construct(
         private readonly Config $config,
@@ -42,20 +49,35 @@ class Pipeline
         private readonly Aws $aws,
         private readonly CacheContext $cacheContext,
         private readonly EventManager $eventManager,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly LockManagerInterface $locks
     ) {
     }
 
     /**
      * @param bool $demo add demo shoppers (a demo store without enough real ones)
      * @return array<string, mixed> the state
-     * @throws LocalizedException when not configured, already running, or the data is too thin
+     * @throws LocalizedException when not configured, already running, a step is running, or the data is too thin
      */
     public function start(bool $demo = false): array
     {
         if ($this->config->bucket() === '' || $this->config->roleArn() === '') {
             throw new LocalizedException(__('Set the S3 bucket and the IAM role for Personalize first (Stores > Configuration > Zero > Recommendations > Amazon Personalize).'));
         }
+        if ($this->state->isRunning()) {
+            throw new LocalizedException(__('A training run is in progress (%1).', $this->state->get()['step']));
+        }
+
+        return $this->locked(fn (): array => $this->startLocked($demo));
+    }
+
+    /**
+     * @return array<string, mixed> the state
+     * @throws LocalizedException when a run started meanwhile, or the data is too thin
+     */
+    private function startLocked(bool $demo): array
+    {
+        // Again under the lock: another start may have got there first.
         if ($this->state->isRunning()) {
             throw new LocalizedException(__('A training run is in progress (%1).', $this->state->get()['step']));
         }
@@ -72,15 +94,30 @@ class Pipeline
         }
         $run = ['id' => gmdate('YmdHis'), 'demo' => $demo, 'stats' => $stats, 'started_at' => gmdate('Y-m-d H:i:s')];
         $this->state->save(['step' => State::SETUP, 'run' => $run, 'error' => null]);
-        return $this->advance();
+        return $this->advanceLocked();
     }
 
     /**
-     * As far as the run can go now.
+     * As far as the run can go now; nothing while another step holds the lock (the next cron run goes on).
      *
      * @return array<string, mixed> the state
      */
     public function advance(): array
+    {
+        if (!$this->locks->lock(self::LOCK, 0)) {
+            return $this->state->get();
+        }
+        try {
+            return $this->advanceLocked();
+        } finally {
+            $this->locks->unlock(self::LOCK);
+        }
+    }
+
+    /**
+     * @return array<string, mixed> the state
+     */
+    private function advanceLocked(): array
     {
         $state = $this->state->get();
         try {
@@ -112,9 +149,14 @@ class Pipeline
      * A failed run taken up again from the step that failed (after fixing
      * what AWS said: a permission, a quota), keeping what was done.
      *
-     * @throws LocalizedException when there is no failed run to resume
+     * @throws LocalizedException when there is no failed run to resume, or a step is running
      */
     public function resume(): array
+    {
+        return $this->locked(fn (): array => $this->resumeLocked());
+    }
+
+    private function resumeLocked(): array
     {
         $state = $this->state->get();
         $step = (string) ($state['run']['failed_step'] ?? '');
@@ -124,16 +166,21 @@ class Pipeline
         $run = $state['run'];
         unset($run['failed_step']);
         $this->state->save(['step' => $step, 'run' => $run, 'error' => null]);
-        return $this->advance();
+        return $this->advanceLocked();
     }
 
     /**
      * The last run's results read again from S3 (they stay there 30 days):
      * after a change in how they are loaded, without training again.
      *
-     * @throws LocalizedException when no finished run is known or a run is in progress
+     * @throws LocalizedException when no finished run is known, a run is in progress, or a step is running
      */
     public function reload(): array
+    {
+        return $this->locked(fn (): array => $this->reloadLocked());
+    }
+
+    private function reloadLocked(): array
     {
         $state = $this->state->get();
         $last = $state['last'];
@@ -152,7 +199,7 @@ class Pipeline
             'batch_jobs' => array_fill_keys($last['outputs'], ''),
         ];
         $this->state->save(['step' => State::LOAD, 'run' => $run, 'error' => null]);
-        return $this->advance();
+        return $this->advanceLocked();
     }
 
     /**
@@ -193,10 +240,31 @@ class Pipeline
     /**
      * The run in progress given up (the jobs already started finish on
      * AWS's side, unused).
+     *
+     * @throws LocalizedException when a step is running
      */
     public function cancel(): array
     {
-        return $this->state->save(['step' => State::IDLE, 'run' => [], 'error' => null]);
+        return $this->locked(fn (): array => $this->state->save(['step' => State::IDLE, 'run' => [], 'error' => null]));
+    }
+
+    /**
+     * $work under the pipeline's lock, never nested: the *Locked methods call advanceLocked(), not advance().
+     *
+     * @param callable(): array<string, mixed> $work
+     * @return array<string, mixed>
+     * @throws LocalizedException when another step holds the lock
+     */
+    private function locked(callable $work): array
+    {
+        if (!$this->locks->lock(self::LOCK, 0)) {
+            throw new LocalizedException(__('A training step is running right now. Try again in a minute.'));
+        }
+        try {
+            return $work();
+        } finally {
+            $this->locks->unlock(self::LOCK);
+        }
     }
 
     private function setup(array $state): array
