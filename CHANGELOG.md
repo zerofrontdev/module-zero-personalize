@@ -1,8 +1,9 @@
 # Changelog: zerofront/module-zero-personalize
 
-## 1.0.4
+## 1.3.7
 
-- Train Now is a POST with the form key (a training run bills AWS), and training steps share a lock, so the cron and the admin never start two imports or trainings.
-- A guest's orders are exported under a keyed hash of the email (HMAC with the install's key) instead of a plain SHA-1 of it, so the id says nothing outside the store. The next training sees those guests as new users.
+- New in the free set (it was a licensed module before): similar products on the product page and picks for every signed-in customer, from the store's own orders, carts and wishlists.
+- Amazon Personalize runs in batch mode on your own AWS account: a weekly train and one batch of recommendations, nothing billed between runs. The module does nothing until you set the S3 bucket and the IAM role; the README lists the policies they need.
+- Needs the Zero theme with Zero Core and Zero Checkout.
 
-Earlier releases (1.0.3 and before): no release notes.
+Earlier releases (1.3.5 and before): see the Git tags.

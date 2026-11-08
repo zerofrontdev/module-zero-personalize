@@ -10,6 +10,22 @@ recommends:
 Configured in Stores > Configuration > Zero > Recommendations. Replaces the
 old Fixstacks_AwsPack (its settings are removed on install).
 
+## Install
+
+Requires Magento Open Source 2.4.7–2.4.9 and PHP 8.2–8.4 with the GD extension built with WebP (`php -r 'var_dump(function_exists("imagewebp"));'` says `true`; Magento's own PHP requirements cover the rest). Without WebP in GD, Zero skips its WebP image copies and serves the originals.
+
+```bash
+composer require zerofront/module-zero-personalize
+bin/magento setup:upgrade
+bin/magento setup:di:compile           # production mode
+bin/magento setup:static-content:deploy # production mode
+bin/magento cache:flush
+```
+
+Composer installs `zerofront/module-zero-core` with it.
+
+Part of [`zerofront/zero`](https://zerofront.dev), which installs the Zero theme and every Zero module at once.
+
 ## Batch mode: what it costs
 
 Personalize can answer in real time, from a campaign or recommender that
@@ -61,11 +77,11 @@ them to stop.
 
 ## Setting up AWS
 
-One S3 bucket and one IAM role, made once (Terraform below, as on
-demo.zerofront.dev), then:
+One S3 bucket and one IAM role, made once (by hand or with your own
+Terraform), then:
 
 - **S3 Bucket** and **IAM Role for Personalize** in the configuration (or
-  pinned in `app/etc/config.php`, as the Zero repository does);
+  pinned in `app/etc/config.php`);
 - the store's own AWS identity (the EC2 instance role, or Access Key ID and
   Secret Access Key for a store outside AWS, kept out of config.php) needs:
 
@@ -82,8 +98,9 @@ demo.zerofront.dev), then:
 
 The role is trusted by `personalize.amazonaws.com` and may read and write
 the bucket; the bucket policy allows `personalize.amazonaws.com` the same
-(Personalize checks both). `infra/terraform/personalize.tf` in the Zero
-repository makes all of it.
+(Personalize checks both). Block public access on the bucket and turn on
+encryption; the files are rebuilt on every run, so a lifecycle rule that
+expires old exports is safe.
 
 Every resource is named after the **prefix** (default `zero-` and the
 store's host name), so one account and one bucket serve several stores and
@@ -145,3 +162,12 @@ tests: `Test/Unit/Model/` (the export, the batch output, a whole run against
 the SDK's mock handler, Enabled per scope).
 
 What changed in each release: [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+OSL-3.0 or AFL-3.0, your choice: see `NOTICE.md`.
+
+---
+
+Zero is made by [Fixstacks](https://fixstacks.com).
+Documentation: https://zerofront.dev/docs. Demo store: https://demo.zerofront.dev.
