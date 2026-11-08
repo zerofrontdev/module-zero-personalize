@@ -1,6 +1,6 @@
 # Zero_Personalize — status and what comes next
 
-**Last updated:** 2026-10-31
+**Last updated:** 2026-11-07
 
 ## Done
 
@@ -22,6 +22,12 @@
   `StatusTest` (`postData()` sends `data` as an object). E2E
   `dev/tests/zero-e2e/tests/personalize-admin.spec.ts` checks the buttons'
   data-post and that a GET of the action answers 404, without clicking.
+
+- Cost levers (2026-11-07): Picks for Customers Active in the Last (days),
+  Most Customers per Run, Recommendations per Product and Customer (Config
+  `customerDays`/`maxCustomers`/`batchResults`; `Pipeline::pickCustomers`,
+  tested). Defaults keep the old behaviour (all customers of the Learn From
+  period, 12 results). Public since 1.3.7; this change is not released yet.
 
 ## Next
 

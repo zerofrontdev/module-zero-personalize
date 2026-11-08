@@ -57,6 +57,9 @@ class PipelineTest extends TestCase
         $config->method('prefix')->willReturn('zero-shop');
         $config->method('region')->willReturn('us-east-1');
         $config->method('lookbackDays')->willReturn(365);
+        $config->method('customerDays')->willReturn(365);
+        $config->method('maxCustomers')->willReturn(0);
+        $config->method('batchResults')->willReturn(12);
         $flags = $this->createStub(FlagManager::class);
         $flags->method('getFlagData')->willReturnCallback(fn () => $this->flag);
         $flags->method('saveFlag')->willReturnCallback(function ($code, $data) {
@@ -69,7 +72,7 @@ class PipelineTest extends TestCase
             1 => ['price' => 10.0, 'categories' => 'Gear', 'created' => 1],
             2 => ['price' => 20.0, 'categories' => 'Gear', 'created' => 1],
         ]);
-        $exporter->method('interactions')->willReturn([['c7', 1, 100, 'Purchase'], ['q3', 2, 100, 'AddToCart']]);
+        $exporter->method('interactions')->willReturn([['c7', 1, time() - 3600, 'Purchase'], ['q3', 2, time() - 3600, 'AddToCart']]);
         $this->results = $this->createMock(Results::class);
         $this->events = $this->createMock(ManagerInterface::class);
         $this->locks = new FakeLockManager();
@@ -355,5 +358,24 @@ class PipelineTest extends TestCase
                 return new Result($result);
             });
         }
+    }
+
+    public function testPickCustomersKeepsTheActiveOnesMostRecentFirst(): void
+    {
+        $now = 1_800_000_000;
+        $day = 86400;
+        $rows = [
+            ['c1', 1, $now - 200 * $day, 'Purchase'],
+            ['c2', 1, $now - 10 * $day, 'Purchase'],
+            ['c2', 2, $now - 50 * $day, 'AddToCart'],
+            ['c3', 1, $now - 5 * $day, 'AddToCart'],
+            ['gabc', 1, $now - 1 * $day, 'Purchase'],
+            ['c4', 1, $now - 90 * $day, 'Purchase'],
+        ];
+
+        $this->assertSame(['c3', 'c2', 'c4', 'c1'], Pipeline::pickCustomers($rows, 365, 0, $now), 'no limit: all customers, guests never');
+        $this->assertSame(['c3', 'c2'], Pipeline::pickCustomers($rows, 30, 0, $now), 'active in the last 30 days');
+        $this->assertSame(['c3', 'c2'], Pipeline::pickCustomers($rows, 365, 2, $now), 'at most 2: the most recent');
+        $this->assertSame([], Pipeline::pickCustomers($rows, 1, 0, $now), 'nobody that recent');
     }
 }

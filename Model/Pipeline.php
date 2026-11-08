@@ -350,7 +350,7 @@ class Pipeline
         if (!isset($run['batch_jobs'])) {
             $inputs = [
                 'similar' => array_map(static fn (int $id) => ['itemId' => (string) $id], array_keys($this->exporter->items())),
-                'for_you' => array_map(static fn (string $user) => ['userId' => $user], $this->customers($this->interactions(false))),
+                'for_you' => array_map(static fn (string $user) => ['userId' => $user], self::pickCustomers($this->interactions(false), $this->config->customerDays(), $this->config->maxCustomers(), time())),
             ];
             $jobs = [];
             foreach ($inputs as $key => $lines) {
@@ -361,7 +361,7 @@ class Pipeline
                 $jobs[$key] = (string) $p->createBatchInferenceJob([
                     'jobName' => $this->config->prefix() . '-' . str_replace('_', '-', $key) . '-' . $run['id'],
                     'solutionVersionArn' => $run['versions'][$key],
-                    'numResults' => self::RESULTS,
+                    'numResults' => $this->config->batchResults(),
                     'jobInput' => ['s3DataSource' => ['path' => 's3://' . $this->config->bucket() . '/' . $file]],
                     'jobOutput' => ['s3DataDestination' => ['path' => 's3://' . $this->config->bucket() . '/' . $this->key($run['id'], 'out/' . $key . '/')]],
                     'roleArn' => $this->config->roleArn(),
@@ -428,18 +428,25 @@ class Pipeline
     }
 
     /**
+     * The customers ("c" users) who get picks: active within $days, the most
+     * recently active first, at most $max of them (0: all). Guests ("g") and
+     * demo shoppers never get picks.
+     *
      * @param array<int, array{0: string, 1: int, 2: int, 3: string}> $interactions
-     * @return string[] the customers ("c" users) with a history
+     * @return string[]
      */
-    private function customers(array $interactions): array
+    public static function pickCustomers(array $interactions, int $days, int $max, int $now): array
     {
-        $users = [];
-        foreach ($interactions as [$user]) {
-            if ($user[0] === 'c') {
-                $users[$user] = true;
+        $since = $now - $days * 86400;
+        $last = [];
+        foreach ($interactions as [$user, , $time]) {
+            if ($user[0] === 'c' && $time >= $since) {
+                $last[$user] = max($last[$user] ?? 0, $time);
             }
         }
-        return array_keys($users);
+        arsort($last);
+        $users = array_keys($last);
+        return $max > 0 ? array_slice($users, 0, $max) : $users;
     }
 
     private function key(string $run, string $name): string

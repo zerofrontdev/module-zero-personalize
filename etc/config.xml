@@ -20,6 +20,9 @@
             <training>
                 <mode>schedule</mode>
                 <lookback_days>365</lookback_days>
+                <customer_days>0</customer_days>
+                <max_customers>0</max_customers>
+                <batch_results>12</batch_results>
                 <day>1</day>
             </training>
             <storefront>

@@ -26,6 +26,9 @@ class Config
     public const ACCESS_KEY = 'zero_personalize/aws/access_key';
     public const SECRET_KEY = 'zero_personalize/aws/secret_key';
     public const LOOKBACK_DAYS = 'zero_personalize/training/lookback_days';
+    public const CUSTOMER_DAYS = 'zero_personalize/training/customer_days';
+    public const MAX_CUSTOMERS = 'zero_personalize/training/max_customers';
+    public const BATCH_RESULTS = 'zero_personalize/training/batch_results';
     public const TRAIN_MODE = 'zero_personalize/training/mode';
     public const TRAIN_DAY = 'zero_personalize/training/day';
     public const SIMILAR_ENABLED = 'zero_personalize/storefront/similar_enabled';
@@ -108,6 +111,29 @@ class Config
     public function lookbackDays(): int
     {
         return max(30, (int) $this->scopeConfig->getValue(self::LOOKBACK_DAYS));
+    }
+
+    /**
+     * Customers get picks only if they did something in this many days; 0 (the
+     * default) means the whole Learn From period. Each customer is one billed
+     * row of the batch, so a shorter period costs less.
+     */
+    public function customerDays(): int
+    {
+        $days = (int) $this->scopeConfig->getValue(self::CUSTOMER_DAYS);
+        return $days > 0 ? $days : $this->lookbackDays();
+    }
+
+    /** The most customers per run (the most recently active first); 0 is no limit. */
+    public function maxCustomers(): int
+    {
+        return max(0, (int) $this->scopeConfig->getValue(self::MAX_CUSTOMERS));
+    }
+
+    /** Recommendations asked of AWS per product and per customer (each is billed). */
+    public function batchResults(): int
+    {
+        return min(Pipeline::RESULTS, max(1, (int) $this->scopeConfig->getValue(self::BATCH_RESULTS)));
     }
 
     /**

@@ -26,7 +26,7 @@
             </group>
             <group id="aws" translate="label comment" type="text" sortOrder="20" showInDefault="1">
                 <label>Amazon Personalize</label>
-                <comment><![CDATA[The bucket and the role are made once (the module's README has the Terraform and the policy). Personalize reads the store's exports from the bucket with the role.]]></comment>
+                <comment><![CDATA[The bucket and the role are made once (the module's README has the policies they need). Personalize reads the store's exports from the bucket with the role.]]></comment>
                 <field id="region" translate="label" type="text" sortOrder="10" showInDefault="1" canRestore="1">
                     <label>Region</label>
                     <validate>required-entry</validate>
@@ -69,6 +69,21 @@
                     <label>Learn From the Last (days)</label>
                     <validate>required-entry validate-digits validate-greater-than-zero</validate>
                     <comment>Orders, carts and wishlists of this period.</comment>
+                </field>
+                <field id="customer_days" translate="label comment" type="text" sortOrder="30" showInDefault="1" canRestore="1">
+                    <label>Picks for Customers Active in the Last (days)</label>
+                    <validate>validate-digits</validate>
+                    <comment>0 means the whole "Learn From" period. Each customer is a billed row of the weekly batch: a shorter period costs less. Customers left out see no picks until they are active again.</comment>
+                </field>
+                <field id="max_customers" translate="label comment" type="text" sortOrder="40" showInDefault="1" canRestore="1">
+                    <label>Most Customers per Run</label>
+                    <validate>validate-digits</validate>
+                    <comment>0 means no limit. Otherwise the most recently active customers come first and the rest are left out.</comment>
+                </field>
+                <field id="batch_results" translate="label comment" type="text" sortOrder="50" showInDefault="1" canRestore="1">
+                    <label>Recommendations per Product and Customer</label>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                    <comment>From 1 to 12. AWS bills each one. Ask for a few more than the storefront shows: similar products are filtered by department and by what is in stock.</comment>
                 </field>
             </group>
             <group id="storefront" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -47,9 +47,43 @@ night, it:
    order: the model learns from every order, mixed carts and test orders
    included, and a men's hoodie shouldn't open on women's tees.
 
-AWS bills the training hours ($0.24 an hour) and the batch recommendations;
-nothing runs between runs. A catalog of a few hundred products costs one
-or two dollars a run. The storefront reads only the store's own tables: a
+AWS bills three things: the data uploaded ($0.05 per GB, cents), the
+training (the recipes `aws-user-personalization-v2` bills $0.002 per 1,000
+interactions, `aws-similar-items` $0.24 per training hour) and the batch
+recommendations ($0.067 per 1,000 requested). The batch part grows with the
+store: a run asks for 12 recommendations for every product and for every
+customer with a history, so it costs about **$0.0008 per row**, a row being
+one product or one customer. Nothing runs between runs.
+
+| Store | Rows (products + customers) | One run (batch + training) | A month, weekly |
+|---|---|---|---|
+| Small: 500 products, 1,000 customers | 1,500 | about $2 | about $8 |
+| Medium: 5,000 products, 20,000 customers | 25,000 | about $20-25 | about $90-110 |
+| Large: 100,000 products, 300,000 customers | 400,000 | about $320+ | about $1,400+ |
+
+Three settings in Stores > Configuration > Zero > Recommendations > Training
+lower the batch part (each is a billed row or recommendation):
+
+- **Picks for Customers Active in the Last (days)**: a customer gets picks
+  only after an order or a cart in this period (0: the whole Learn From
+  period). 90 days instead of 365 usually drops a large share of the rows.
+- **Most Customers per Run**: a cap (0: none); the most recently active come
+  first.
+- **Recommendations per Product and Customer** (1-12, default 12): what the
+  batch asks for. The storefront shows 8 by default; keep a few spare, since
+  similar products are filtered by department and stock.
+
+Customers left out see no "Picked for you" until they are active again;
+product pages keep their similar products.
+
+The small row matches a real run on the demo (1,257 rows, 2.3 training
+hours: about $1.50). The medium and large rows are the batch price times the
+rows plus a guess for training, not measured runs. Past roughly 40,000 rows a
+weekly run costs more than the always-on campaign ($144 a month): then train
+less often (the schedule is in the configuration) or keep to the small shop's
+size. Prices are AWS's list prices for US regions on 2026-11-07; check
+https://aws.amazon.com/personalize/pricing/ before you plan.
+The storefront reads only the store's own tables: a
 product page never waits for AWS and stays in the page cache (Varnish,
 CloudFront). The recommendations are a week old at most.
 
